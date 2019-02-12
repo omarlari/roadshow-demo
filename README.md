@@ -1,1 +1,1 @@
-### Reposiotry for road show commands/instructions
+### Repository for road show commands/instructions
