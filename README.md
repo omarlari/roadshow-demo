@@ -43,7 +43,7 @@ aws iam attach-role-policy --role-name ecsTaskExecutionRole --policy-arn arn:aws
 ### configure ecscli
 ecs-cli configure --cluster roadshow --region us-east-2 --default-launch-type EC2 --config-name roadshow
 
-ecs-cli configure profile --access-key AKIAJ4NJWX5GKJQASP7A --secret-key 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 --profile-name roadshow
+ecs-cli configure profile --access-key --secret-key --profile-name roadshow
 
 ### bring up cluster
 ecs-cli up --keypair roadshow --capability-iam --size 2 --instance-type t2.small --cluster-config roadshow
