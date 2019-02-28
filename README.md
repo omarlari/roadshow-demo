@@ -2,13 +2,14 @@
 
 1.) Have a clean AWS account
 2.) Use either Cloud9 or your local cli #ensure you have administrative privledges
-3.) Run the pre-req.sh to install all of the need dependencies
+3.) Run the pre-req.sh to install all of the needed dependencies
 
 eks
 - provision a cluster with eksctl and new config file format
 - show the dashboard
 - demonstrate HPA (ideally with SQS queue depth)
-- demonstrate spot cluster autoscaling
+- demonstrate cluster autoscaling
+- demonstrate ci/cd with codesuite
 
 fargate
 - provision a fargate cluster with ecs-cli
@@ -28,8 +29,8 @@ demo firecracker
 https://github.com/omarlari/roadshow-demo.git
 
 #### install tooling
-chmod u+x pre-reqs.sh
-./pre-reqs.sh
+chmod u+x ~/environment/roadshow-demo/pre-reqs.sh
+~/environment/roadshow-demo/pre-reqs.sh
 
 ### eks demo
 
@@ -38,11 +39,16 @@ chmod u+x pre-reqs.sh
 eksctl create cluster -f ~/environment/eks/cluster.yaml
 
 #### issue basic commands
+
 kubectl get nodes
+
 kubectl get ns
+
 kubectl get pods --all-namespaces
 
 #### demonstrate basic service deployment
+
+
 
 #### Helm install
 
@@ -58,14 +64,45 @@ kubectl apply -f ~/environment/roadshow-demo/eks/rbac-helm.yaml
 
 helm init --service-account tiller
 
+helm update
+
 #### HPA
 
 helm install stable/metrics-server --name metrics-server --version 2.4.0 --namespace metrics
 
+kubectl get apiservice v1beta1.metrics.k8s.io -o yaml
+
+Deploy a sample application:
+kubectl run php-apache --image=k8s.gcr.io/hpa-example --requests=cpu=200m --expose --port=80
+
+Create HPA resource:
+kubectl autoscale deployment php-apache --cpu-percent=50 --min=1 --max=10
+
+kubectl get hpa
+
+generate load:
+kubectl run -i --tty load-generator --image=busybox /bin/sh
+while true; do wget -q -O - http://php-apache; done
+
+kubectl get hpa -w
+
+clean up
+remove the load generator deployment
+
+#### HPA with SQS
+
+
 #### Cluster autoscaler
 
+add your specifc ASG to the ~/environment/roadshow-demo/cluster_autoscaler.yml file
 
-#### Spot integration
+kubectl apply -f ~/enable/roadshow-demo/cluster_autoscaler.yml
+
+kubectl logs -f deployment/cluster-autoscaler -n kube-system
+
+#### Codesuite integration
+
+
 
 
 ### Fargate
