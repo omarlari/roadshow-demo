@@ -29,7 +29,9 @@ demo firecracker
 https://github.com/omarlari/roadshow-demo.git
 
 #### install tooling
+
 chmod u+x ~/environment/roadshow-demo/pre-reqs.sh
+
 ~/environment/roadshow-demo/pre-reqs.sh
 
 ### eks demo
@@ -48,6 +50,15 @@ kubectl get pods --all-namespaces
 
 #### demonstrate basic service deployment
 
+kubectl run hello-world --replicas=5 --labels="run=load-balancer-example" --image=nginx --port=80
+
+kubectl get deployments hello-world
+
+kubectl describe deployments hello-world
+
+kubectl expose deployment hello-world --type=LoadBalancer --name=my-service
+
+kubectl get services my-service -o wide
 
 
 #### Helm install
@@ -143,6 +154,7 @@ ecs-cli ps
 
 aws servicediscovery discover-instances --namespace-name roadshow --service-name apache --region us-east-2
 
+### Appmesh
 
 
 
