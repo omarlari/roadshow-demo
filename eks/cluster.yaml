@@ -1,0 +1,22 @@
+apiVersion: eksctl.io/v1alpha4
+kind: ClusterConfig
+
+metadata:
+  name: demo
+  region: us-west-2
+  version: '1.11'
+
+nodeGroups:
+  - name: dev-t3-small
+    labels: {pool: dev-t3-micro}
+    instanceType: t3.small
+    desiredCapacity: 3
+    minSize: 1
+    maxSize: 5
+    volumeSize: 50
+    volumeType: gp2
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        externalDNS: true
