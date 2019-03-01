@@ -135,15 +135,14 @@ Prerequisites:
 }
 ```
 
-Checkout repo
+Clone repo
 ```
 git clone https://github.com/chankh/k8s-cloudwatch-adapter
-cd samples/sqs
 ```
 
 Create the config file for SQS metrics
 ```
-cat >> cloudwatch.yaml < EOF
+cat >> cloudwatch.yaml << EOF
 series:
   - name: sqslength
     resource:
@@ -171,11 +170,12 @@ kubectl -n custom-metrics create configmap k8s-cloudwatch-adapter --from-file=cl
 
 Next deploy the adapter to your Kubernetes cluster.
 ```
-kubectl apply -f https://raw.githubusercontent.com/chankh/k8s-cloudwatch-adapter/master/deploy/adapter.yaml
+kubectl apply -f deploy/adapter.yaml
 ```
 
 Configure sample SQS consumer application with the correct AWS region
 ```
+cd samples/sqs
 vim deploy/consumer-deployment.yaml
 ```
 
