@@ -102,6 +102,115 @@ remove the load generator deployment
 
 #### HPA with SQS
 
+Prerequisites:
+- kube2iam
+- IAM role with CloudWatch permissions
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:GetMetricData",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:ListMetrics"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+- IAM role with SQS permissions
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "sqs:*",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Checkout repo
+```
+git clone https://github.com/chankh/k8s-cloudwatch-adapter
+cd samples/sqs
+```
+
+Create the config file for SQS metrics
+```
+cat >> cloudwatch.yaml < EOF
+series:
+  - name: sqslength
+    resource:
+      resource: "deployment"
+    queries:
+      - id: sqs_helloworld
+        metricStat:
+          metric:
+            namespace: "AWS/SQS"
+            metricName: "ApproximateNumberOfMessagesVisible"
+            dimensions:
+              - name: QueueName
+                value: "helloworld"
+          period: 300
+          stat: Average
+          unit: Count
+        returnData: true
+EOF
+```
+
+Create a configmap from this file
+```
+kubectl -n custom-metrics create configmap k8s-cloudwatch-adapter --from-file=cloudwatch.yaml
+```
+
+Next deploy the adapter to your Kubernetes cluster.
+```
+kubectl apply -f https://raw.githubusercontent.com/chankh/k8s-cloudwatch-adapter/master/deploy/adapter.yaml
+```
+
+Configure sample SQS consumer application with the correct AWS region
+```
+vim deploy/consumer-deployment.yaml
+```
+
+Update config to replace region with your region, find the section and change accordingly.
+```
+    - env:
+      - name: AWS_REGION
+        value: us-west-2
+```
+
+Deploy sample SQS consumer application
+```
+kubectl apply -f deploy/consumer-deployment.yaml
+```
+
+Create HPA resource
+```
+kubectl apply -f deploy/hpa.yaml
+```
+
+Verify HPA
+```
+kubectl get hpa
+```
+
+Generate Load
+```
+go run producer/main.go
+```
+
+On a separate terminal, watch HPA for changes
+```
+kubectl get hpa -w
+```
+
 
 #### Cluster autoscaler
 
