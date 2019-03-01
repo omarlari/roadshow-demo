@@ -104,7 +104,7 @@ remove the load generator deployment
 
 Prerequisites:
 - kube2iam
-- IAM role with CloudWatch permissions
+- Add IAM policy for CloudWatch permissions to your nodegroup role
 ```
 {
     "Version": "2012-10-17",
@@ -121,7 +121,7 @@ Prerequisites:
     ]
 }
 ```
-- IAM role with SQS permissions
+- Add this IAM policy for SQS permissions to your nodegroup role
 ```
 {
     "Version": "2012-10-17",
@@ -173,21 +173,9 @@ Next deploy the adapter to your Kubernetes cluster.
 kubectl apply -f deploy/adapter.yaml
 ```
 
-Configure sample SQS consumer application with the correct AWS region
-```
-cd samples/sqs
-vim deploy/consumer-deployment.yaml
-```
-
-Update config to replace region with your region, find the section and change accordingly.
-```
-    - env:
-      - name: AWS_REGION
-        value: us-west-2
-```
-
 Deploy sample SQS consumer application
 ```
+cd samples/sqs
 kubectl apply -f deploy/consumer-deployment.yaml
 ```
 
