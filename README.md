@@ -102,6 +102,103 @@ remove the load generator deployment
 
 #### HPA with SQS
 
+Prerequisites:
+- kube2iam
+- Add IAM policy for CloudWatch permissions to your nodegroup role
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:GetMetricData",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:ListMetrics"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+- Add this IAM policy for SQS permissions to your nodegroup role
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "sqs:*",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Clone repo
+```
+git clone https://github.com/chankh/k8s-cloudwatch-adapter
+```
+
+Create the config file for SQS metrics
+```
+cat >> cloudwatch.yaml << EOF
+series:
+  - name: sqslength
+    resource:
+      resource: "deployment"
+    queries:
+      - id: sqs_helloworld
+        metricStat:
+          metric:
+            namespace: "AWS/SQS"
+            metricName: "ApproximateNumberOfMessagesVisible"
+            dimensions:
+              - name: QueueName
+                value: "helloworld"
+          period: 300
+          stat: Average
+          unit: Count
+        returnData: true
+EOF
+```
+
+Create a configmap from this file
+```
+kubectl -n custom-metrics create configmap k8s-cloudwatch-adapter --from-file=cloudwatch.yaml
+```
+
+Next deploy the adapter to your Kubernetes cluster.
+```
+kubectl apply -f deploy/adapter.yaml
+```
+
+Deploy sample SQS consumer application
+```
+cd samples/sqs
+kubectl apply -f deploy/consumer-deployment.yaml
+```
+
+Create HPA resource
+```
+kubectl apply -f deploy/hpa.yaml
+```
+
+Verify HPA
+```
+kubectl get hpa
+```
+
+Generate Load
+```
+go run producer/main.go
+```
+
+On a separate terminal, watch HPA for changes
+```
+kubectl get hpa -w
+```
+
 
 #### Cluster autoscaler
 
